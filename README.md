@@ -402,7 +402,6 @@ The experiments reports aggregate and attack-specific metrics:
 
 Confidence intervals are computed using 95% bootstrap intervals over episode-level metrics.
 
--
 ## License
 
 For academic reproducibility, a permissive license such as MIT, BSD-3-Clause, or Apache-2.0 can be used if compatible with all dependencies and institutional requirements.
