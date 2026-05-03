@@ -5,23 +5,23 @@ This repository contains the local prototype and reproducibility artifact for **
 
 ---
 
-## 1. Repository purpose
+## Repository purpose
 
 The repository provides:
 
-1. a synthetic O-RAN-edge security simulator;
+1. O-RAN-edge security simulator;
 2. an analytical grey-box DT used for pre-actuation safety screening;
 3. heuristic ungated and DT-gated controllers;
 4. Ollama-backed LLM planners operating over a bounded remediation catalog;
 5. JSON-schema validation for LLM action selection;
 6. scripts for running experiments, saving logs, and generating figures/tables; and
-7. the numerical parameter values used in the paper artifact.
+7. The numerical parameter values used in the paper artifact.
 
 The paper intentionally keeps the performance evaluation concise. This README records the implementation-specific numerical values so that readers can inspect, reproduce, or modify the artifact without overloading the manuscript.
 
 ---
 
-## 2. High-level architecture
+## High-level architecture
 
 TwinShield follows a bounded reasoning and safe actuation design:
 
@@ -36,64 +36,48 @@ In gated LLM mode, the LLM does **not** generate arbitrary network commands. It 
 
 ---
 
-## 3. Repository structure
-
-A typical repository layout is expected to follow the structure below. File names may be adapted as long as the same logic is preserved.
+## Project structure
 
 ```text
-TwinShield/
-├── README.md
-├── requirements.txt
-├── run_experiments.py
-├── analyze_results.py
-├── config/
-│   └── default_config.yaml
-├── src/
-│   ├── simulator.py
-│   ├── digital_twin.py
-│   ├── controllers.py
-│   ├── llm_planner.py
-│   ├── schema.py
-│   └── metrics.py
-├── results/
-│   ├── raw_logs/
-│   ├── summaries/
-│   └── figures/
-└── paper/
-    └── optional_latex_snippets.tex
+codes/
+|-- check_ollama.py
+|-- plot_results.py
+|-- requirements.txt
+|-- run_experiment.py
+|-- configs/
+|   `-- example_synthetic.yaml
+|-- data/
+|   `-- trace_schema_example.csv
+|-- results/
+|-- runs/
+|-- src/
+|   `-- twinshield/
+|       |-- __init__.py
+|       |-- actions.py
+|       |-- heuristics.py
+|       |-- llm_planner.py
+|       |-- metrics.py
+|       |-- ollama_client.py
+|       |-- state.py
+|       |-- synthetic.py
+|       |-- trace_io.py
+|       `-- twin.py
 ```
 
----
+## Main components
 
-## 4. Software requirements
+- `codes/run_experiment.py` runs the main experiments using either synthetic scenarios or CSV-based traces.
+- `codes/plot_results.py` rebuilds plots from a saved run directory.
+- `codes/configs/example_synthetic.yaml` provides an example experiment configuration.
+- `codes/data/trace_schema_example.csv` provides an example input trace.
+- `codes/src/twinshield/` contains the core source package.
 
-### 4.1 Python environment
+## Code availability
 
-Recommended environment:
+The repository is being prepared for release. The full implementation, experiment scripts, and supporting materials will be uploaded after paper acceptance.
 
-```bash
-python >= 3.10
-pip install -r requirements.txt
-```
 
-Typical Python packages:
-
-```text
-numpy
-pandas
-scipy
-scikit-learn
-matplotlib
-seaborn
-pyyaml
-tqdm
-jsonschema
-requests
-```
-
-If the code uses only standard plotting, `seaborn` can be removed.
-
-### 4.2 Ollama setup for local LLM planning
+### Ollama setup for local LLM planning
 
 The LLM planner is executed locally through Ollama. Install Ollama from the official distribution and pull the models used in the artifact.
 
@@ -109,7 +93,7 @@ The exact local model tags may depend on the Ollama installation. If a model tag
 
 ---
 
-## 5. Experimental configurations
+## Experimental configurations
 
 The saved artifact uses eight controller/model configurations:
 
@@ -138,7 +122,7 @@ The evaluation size is:
 
 ---
 
-## 6. State representation
+## State representation
 
 At each decision epoch `t`, the system state is represented as:
 
@@ -164,7 +148,7 @@ The latent variables `rho` and `xi` are internal simulator states. In a deployme
 
 ---
 
-## 7. Threat scenarios and attack drift
+## Threat scenarios and attack drift
 
 The artifact considers three attack conditions. Each condition modifies the latent poisoning severity `rho` and xApp compromise severity `xi` through fixed drift terms.
 
@@ -185,7 +169,7 @@ Both values are then clipped to `[0, 1]`.
 
 ---
 
-## 8. Detector proxy generation
+## Detector proxy generation
 
 The current artifact uses synthetic monotone detector proxies rather than separately trained detectors.
 
@@ -207,7 +191,7 @@ These proxies are intended to preserve the expected monotonic relationship betwe
 
 ---
 
-## 9. Remediation action catalog
+## Remediation action catalog
 
 TwinShield uses a fixed seven-action remediation catalog. The bounded action set prevents the planner from generating arbitrary or unsafe operations.
 
@@ -244,35 +228,35 @@ The xApp-side weight is slightly higher because xApp compromise can directly aff
 
 ---
 
-## 11. Digital twin transition model
+## Digital twin transition model
 
-The artifact uses an analytical grey-box DT rather than a learned twin. After applying attack drift and action mitigation, the DT predicts service outcomes using bounded surrogate equations.
+We use an analytical grey-box DT rather than a learned twin. After applying attack drift and action mitigation, the DT predicts service outcomes using bounded surrogate equations.
 
-### 11.1 Residual risk
+### Residual risk
 
 ```text
 R_hat = 0.55 * rho_hat + 0.65 * xi_hat
 ```
 
-### 11.2 Throughput prediction
+### Throughput prediction
 
 ```text
 tau_hat = clip(0.89 - 0.35 * load - 0.46 * R_hat - 0.19 * C(action), 0, 1)
 ```
 
-### 11.3 Latency prediction
+### Latency prediction
 
 ```text
 lambda_hat = clip(0.15 + 0.54 * load + 0.55 * R_hat + 0.22 * C(action), 0, 1)
 ```
 
-### 11.4 SLA violation prediction
+### SLA violation prediction
 
 ```text
 sigma_hat = clip(0.10 + 0.56 * R_hat + 0.20 * load + 0.25 * C(action), 0, 1)
 ```
 
-### 11.5 Stability prediction
+### Stability prediction
 
 ```text
 kappa_hat = clip(0.92 - 0.35 * R_hat - 0.22 * C(action), 0, 1)
@@ -282,7 +266,7 @@ These equations encode the assumed relationship that higher load, higher residua
 
 ---
 
-## 12. Digital twin uncertainty model
+## Digital twin uncertainty model
 
 The DT also assigns uncertainty margins to the predicted outcomes.
 
@@ -296,7 +280,7 @@ These uncertainty terms are used by the safety gate to apply conservative pre-ac
 
 ---
 
-## 13. Robust objective function
+## Robust objective function
 
 For each candidate action, the DT computes a one-step robust objective:
 
@@ -322,7 +306,7 @@ The objective weights are:
 
 ---
 
-## 14. DT safety constraints
+## DT safety constraints
 
 An action is DT-approved only if it satisfies all conservative safety constraints:
 
@@ -343,11 +327,11 @@ The gate therefore uses the DT as a safety authority, not only as a predictor.
 
 ---
 
-## 15. Candidate construction for LLM planning
+## Candidate construction for LLM planning
 
 The planner receives a bounded candidate list rather than the full uncontrolled action space.
 
-### 15.1 Gated LLM mode
+###  Gated LLM mode
 
 1. The DT evaluates all seven actions.
 2. Actions satisfying all safety constraints are marked as approved.
@@ -355,19 +339,19 @@ The planner receives a bounded candidate list rather than the full uncontrolled 
 4. If no safe action exists, the planner receives the top four ranked actions as a graceful fallback.
 5. The selected action must belong to the provided candidate list.
 
-### 15.2 Ungated LLM mode
+### Ungated LLM mode
 
 1. The DT still ranks actions for context.
 2. The candidate list is not filtered to safe-only actions.
 3. The LLM receives the top four ranked actions without conservative safety filtering.
 
-### 15.3 Heuristic modes
+### Heuristic modes
 
 The heuristic controllers use the same bounded catalog and detector scores. The gated heuristic applies the DT safety screen, while the ungated heuristic does not. This makes the heuristic pair useful for isolating the effect of the DT gate independently of LLM behavior.
 
 ---
 
-## 16. LLM input and output contract
+## LLM input and output contract
 
 The LLM prompt includes:
 
@@ -403,7 +387,7 @@ If parsing fails, the JSON schema is violated, or the model selects an out-of-se
 
 ---
 
-## 17. Metrics
+## Metrics
 
 The artifact reports aggregate and attack-specific metrics:
 
@@ -422,117 +406,13 @@ The artifact reports aggregate and attack-specific metrics:
 
 Confidence intervals are computed using 95% bootstrap intervals over episode-level metrics.
 
----
+-
+## License
 
-## 18. Reported artifact-level result snapshot
-
-The paper reports two complementary result layers.
-
-### 18.1 Controlled DT ablation using heuristic controllers
-
-| Metric | Ungated heuristic | DT-gated heuristic | Change |
-|---|---:|---:|---:|
-| Unsafe rate | 0.140 [0.105, 0.175] | 0.041 [0.024, 0.060] | 70.4% decrease |
-| SLA score | 0.284 [0.273, 0.295] | 0.252 [0.243, 0.262] | 11.2% decrease |
-| Throughput | 0.636 [0.620, 0.651] | 0.662 [0.647, 0.677] | 4.2% increase |
-| Stability | 0.873 [0.868, 0.878] | 0.890 [0.887, 0.894] | 2.0% increase |
-| Recovery steps | 1.40 [1.24, 1.59] | 2.50 [1.70, 3.45] | Slower recovery |
-
-This comparison is the primary DT-isolation result because it measures the gate effect independently of LLM behavior.
-
-### 18.2 LLM planner behavior under DT gating
-
-| Model | Ungated unsafe rate | Gated unsafe rate | All-safe candidate exposure | Approved / blocked actions | Top-1 adherence |
-|---|---:|---:|---:|---:|---:|
-| Gemma4 | 0.062 | 0.060 | 96.9% | 5.16 / 1.84 | 10.5% |
-| Granite3.3 | 0.047 | 0.049 | 97.5% | 5.32 / 1.68 | 24.2% |
-| Llama3.2:1b | 0.059 | 0.046 | 98.4% | 5.03 / 1.97 | 27.0% |
-
-All gated LLM runs preserve 100% JSON/schema validity in the saved artifact. The LLM comparison should be interpreted as a bounded-planner sensitivity analysis, not as a universal model ranking.
+For academic reproducibility, a permissive license such as MIT, BSD-3-Clause, or Apache-2.0 can be used if compatible with all dependencies and institutional requirements.
 
 ---
 
-## 19. How to run the artifact
-
-A representative execution flow is:
-
-```bash
-# 1. Create environment
-python -m venv .venv
-source .venv/bin/activate      # Linux/macOS
-# .venv\Scripts\activate       # Windows
-pip install -r requirements.txt
-
-# 2. Pull local LLMs if LLM experiments are enabled
-ollama pull gemma:4b
-ollama pull granite3.3
-ollama pull llama3.2:1b
-
-# 3. Run all experiments
-python run_experiments.py --config config/default_config.yaml
-
-# 4. Analyze results and generate tables/figures
-python analyze_results.py --results_dir results/raw_logs --out_dir results/summaries
-```
-
-If the implementation uses different script names, update the commands accordingly.
-
----
-
-## 20. Reproducibility checklist
-
-Before reporting results, verify that:
-
-- [ ] the random seed is fixed or logged;
-- [ ] all eight controller/model configurations are executed;
-- [ ] each configuration uses 80 episodes and 16 decision epochs;
-- [ ] all selected actions belong to the seven-action catalog;
-- [ ] LLM outputs are validated against the JSON schema;
-- [ ] fallback decisions are logged separately;
-- [ ] DT-approved and DT-blocked action counts are stored;
-- [ ] unsafe-action labels are computed consistently across all modes;
-- [ ] bootstrap confidence intervals are computed from episode-level metrics; and
-- [ ] generated figures/tables are produced from saved logs, not manually entered values.
-
----
-
-## 21. Limitations of the current artifact
-
-The current artifact has the following limitations:
-
-1. It uses synthetic detector proxies instead of trained UE-risk and xApp-misbehavior classifiers.
-2. The DT is analytical and manually parameterized rather than calibrated from live O-RAN traces.
-3. The environment does not yet run on Open5GS, srsRAN, FlexRIC, or O-RAN SC.
-4. Only one action is selected per decision step; compound actions are not enabled.
-5. The LLMs are evaluated as bounded local planners, not as unrestricted autonomous agents.
-6. Broader baseline comparisons, intent-profile sweeps, and real-trace validation remain future work.
-
-These limitations are intentional in the current version because the goal is to isolate the value of DT-gated action validation under controlled and reproducible conditions.
-
----
-
-## 22. Suggested citation text for the paper
-
-The paper can refer to this repository using a short statement such as:
-
-```latex
-\noindent\textbf{Artifact availability:} The implementation, configuration parameters, and result-processing scripts used in this study are available at \url{https://github.com/Abdullatif2/TwinShield}.
-```
-
-Or, inside the performance evaluation section:
-
-```latex
-To keep the evaluation concise, this section reports the main experimental settings and results, while the full implementation-specific parameter values, configuration files, and result-processing scripts are provided in the public artifact at \url{https://github.com/Abdullatif2/TwinShield}.
-```
-
----
-
-## 23. License
-
-Add the intended license before making the repository public. For academic reproducibility, a permissive license such as MIT, BSD-3-Clause, or Apache-2.0 can be used if compatible with all dependencies and institutional requirements.
-
----
-
-## 24. Contact
+## Contact
 
 For questions about the artifact, please open a GitHub issue or contact the corresponding author listed in the paper.
