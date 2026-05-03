@@ -1,6 +1,6 @@
 # TwinShield: LLM-Supported Digital-Twin-Gated Zero-Touch Resilience for O-RAN Security
 
-This repository contains the local prototype and reproducibility artifact for **TwinShield**, an LLM-supported digital-twin (DT)-gated zero-touch resilience framework for O-RAN security. The prototype evaluates bounded remediation decisions under coupled KPI poisoning and xApp misbehavior using a synthetic O-RAN-inspired environment, an analytical grey-box DT, heuristic controllers, and local LLM planners executed through Ollama.
+This repository contains the local prototype and reproducibility for **TwinShield**, an LLM-supported digital-twin (DT)-gated zero-touch resilience framework for O-RAN security. The prototype evaluates bounded remediation decisions under coupled KPI poisoning and xApp misbehavior using a synthetic O-RAN-inspired environment, an analytical grey-box DT, heuristic controllers, and local LLM planners executed through Ollama.
 
 
 ---
@@ -15,9 +15,7 @@ The repository provides:
 4. Ollama-backed LLM planners operating over a bounded remediation catalog;
 5. JSON-schema validation for LLM action selection;
 6. scripts for running experiments, saving logs, and generating figures/tables; and
-7. The numerical parameter values used in the paper artifact.
-
-The paper intentionally keeps the performance evaluation concise. This README records the implementation-specific numerical values so that readers can inspect, reproduce, or modify the artifact without overloading the manuscript.
+7. The numerical parameter values used in the paper.
 
 ---
 
@@ -79,7 +77,7 @@ The repository is being prepared for release. The full implementation, experimen
 
 ### Ollama setup for local LLM planning
 
-The LLM planner is executed locally through Ollama. Install Ollama from the official distribution and pull the models used in the artifact.
+The LLM planner is executed locally through Ollama. Install Ollama from the official distribution and pull the models used.
 
 Example commands:
 
@@ -95,7 +93,7 @@ The exact local model tags may depend on the Ollama installation. If a model tag
 
 ## Experimental configurations
 
-The saved artifact uses eight controller/model configurations:
+We use eight controller/model configurations:
 
 | Group | Configuration | Description |
 |---|---|---|
@@ -150,7 +148,7 @@ The latent variables `rho` and `xi` are internal simulator states. In a deployme
 
 ## Threat scenarios and attack drift
 
-The artifact considers three attack conditions. Each condition modifies the latent poisoning severity `rho` and xApp compromise severity `xi` through fixed drift terms.
+We consider three attack conditions. Each condition modifies the latent poisoning severity `rho` and xApp compromise severity `xi` through fixed drift terms.
 
 | Attack condition | Drift in `rho` | Drift in `xi` | Interpretation |
 |---|---:|---:|---|
@@ -171,8 +169,6 @@ Both values are then clipped to `[0, 1]`.
 
 ## Detector proxy generation
 
-The current artifact uses synthetic monotone detector proxies rather than separately trained detectors.
-
 The UE-risk proxy is:
 
 ```text
@@ -187,7 +183,7 @@ r_xApp = clip(0.05 + 0.75 * xi + 0.05 * load + eps_x, 0, 1)
 
 where `eps_UE` and `eps_x` are stochastic noise terms used by the simulator.
 
-These proxies are intended to preserve the expected monotonic relationship between latent attack severity and observable detector evidence. They are not claimed to replace trained O-RAN security detectors.
+These proxies are intended to preserve the expected monotonic relationship between latent attack severity and observable detector evidence
 
 ---
 
@@ -262,7 +258,7 @@ sigma_hat = clip(0.10 + 0.56 * R_hat + 0.20 * load + 0.25 * C(action), 0, 1)
 kappa_hat = clip(0.92 - 0.35 * R_hat - 0.22 * C(action), 0, 1)
 ```
 
-These equations encode the assumed relationship that higher load, higher residual security risk, and more aggressive actions can degrade throughput, increase latency/SLA violation, and reduce stability.
+These equations encode the assumption that higher load, higher residual security risk, and more aggressive actions can degrade throughput, increase latency/SLA violations, and reduce stability.
 
 ---
 
@@ -323,7 +319,7 @@ kappa_hat - 1.96 * U_kappa >= 0.60
 | Minimum conservative stability | 0.60 | Avoid actions that are predicted to destabilize the control loop. |
 | Uncertainty multiplier | 1.96 | Conservative margin applied to DT uncertainty estimates. |
 
-The gate therefore uses the DT as a safety authority, not only as a predictor.
+The gate, therefore, uses the DT as a safety authority, not only as a predictor.
 
 ---
 
@@ -336,14 +332,14 @@ The planner receives a bounded candidate list rather than the full uncontrolled 
 1. The DT evaluates all seven actions.
 2. Actions satisfying all safety constraints are marked as approved.
 3. The planner receives up to the top four DT-approved actions ranked by objective value.
-4. If no safe action exists, the planner receives the top four ranked actions as a graceful fallback.
+4. If no safe action exists, the planner receives the top four-ranked actions as a graceful fallback.
 5. The selected action must belong to the provided candidate list.
 
 ### Ungated LLM mode
 
 1. The DT still ranks actions for context.
 2. The candidate list is not filtered to safe-only actions.
-3. The LLM receives the top four ranked actions without conservative safety filtering.
+3. The LLM receives the top four-ranked actions without conservative safety filtering.
 
 ### Heuristic modes
 
@@ -383,13 +379,13 @@ Recommended schema rules:
 | `confidence` | number | Should be in `[0, 1]`. |
 | `rationale` | string | Short explanation of the decision. |
 
-If parsing fails, the JSON schema is violated, or the model selects an out-of-set action, the controller falls back to the first candidate in the DT-ranked candidate list.
+If parsing fails, the JSON schema is violated, or the model selects an out-of-set action, the controller falls back to the first DT-ranked candidate.
 
 ---
 
 ## Metrics
 
-The artifact reports aggregate and attack-specific metrics:
+The experiments reports aggregate and attack-specific metrics:
 
 | Metric | Meaning |
 |---|---|
@@ -413,6 +409,4 @@ For academic reproducibility, a permissive license such as MIT, BSD-3-Clause, or
 
 ---
 
-## Contact
 
-For questions about the artifact, please open a GitHub issue or contact the corresponding author listed in the paper.
