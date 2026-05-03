@@ -2,7 +2,6 @@
 
 This repository contains the local prototype and reproducibility artifact for **TwinShield**, an LLM-supported digital-twin (DT)-gated zero-touch resilience framework for O-RAN security. The prototype evaluates bounded remediation decisions under coupled KPI poisoning and xApp misbehavior using a synthetic O-RAN-inspired environment, an analytical grey-box DT, heuristic controllers, and local LLM planners executed through Ollama.
 
-> **Important scope note.** The current artifact is a synthetic, repeatable evaluation environment. It is intended to test the DT-gating principle and the bounded LLM decision loop under controlled conditions. It should not be interpreted as a deployment-ready O-RAN detector, a trace-calibrated DT, or a production RIC implementation.
 
 ---
 
